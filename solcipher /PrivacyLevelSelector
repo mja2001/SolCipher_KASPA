@@ -1,0 +1,105 @@
+import React from 'react';
+import { Shield, Zap, Lock, Clock, Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const privacyLevels = [
+  {
+    id: 'standard',
+    name: 'Standard',
+    description: 'Basic mixing with 5-10 decoys',
+    icon: Shield,
+    confirmTime: '~5 seconds',
+    anonymitySet: '50-75',
+    mixingRounds: 1,
+    color: 'from-blue-500 to-cyan-500',
+    borderColor: 'border-cyan-500/30',
+    bgColor: 'bg-cyan-500/10'
+  },
+  {
+    id: 'enhanced',
+    name: 'Enhanced',
+    description: 'Advanced mixing with 20+ decoys',
+    icon: Lock,
+    confirmTime: '~8 seconds',
+    anonymitySet: '100-150',
+    mixingRounds: 2,
+    color: 'from-purple-500 to-pink-500',
+    borderColor: 'border-purple-500/30',
+    bgColor: 'bg-purple-500/10'
+  },
+  {
+    id: 'maximum',
+    name: 'Maximum',
+    description: 'Multiple DAG mixing rounds',
+    icon: Zap,
+    confirmTime: '~15 seconds',
+    anonymitySet: '200+',
+    mixingRounds: 3,
+    color: 'from-amber-500 to-orange-500',
+    borderColor: 'border-amber-500/30',
+    bgColor: 'bg-amber-500/10'
+  }
+];
+
+export default function PrivacyLevelSelector({ selected, onSelect }) {
+  return (
+    <div className="space-y-3">
+      <label className="text-slate-300 text-sm font-medium">Privacy Level</label>
+      <div className="grid gap-3">
+        {privacyLevels.map((level) => {
+          const isSelected = selected === level.id;
+          const Icon = level.icon;
+          
+          return (
+            <button
+              key={level.id}
+              onClick={() => onSelect(level.id)}
+              className={cn(
+                "relative p-4 rounded-xl border transition-all duration-300 text-left",
+                "hover:border-opacity-60",
+                isSelected 
+                  ? `${level.borderColor} border-opacity-100 ${level.bgColor}` 
+                  : "border-slate-700 hover:border-slate-600 bg-slate-800/50"
+              )}
+            >
+              {/* Selection indicator */}
+              {isSelected && (
+                <div className={cn(
+                  "absolute top-4 right-4 w-3 h-3 rounded-full bg-gradient-to-br",
+                  level.color
+                )} />
+              )}
+              
+              <div className="flex items-start gap-3">
+                <div className={cn(
+                  "p-2 rounded-lg bg-gradient-to-br",
+                  level.color
+                )}>
+                  <Icon className="w-4 h-4 text-white" />
+                </div>
+                
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-white font-medium">{level.name}</h4>
+                  </div>
+                  <p className="text-slate-400 text-sm mt-0.5">{level.description}</p>
+                  
+                  <div className="flex items-center gap-4 mt-3">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="text-slate-400 text-xs">{level.confirmTime}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="text-slate-400 text-xs">{level.anonymitySet} participants</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
