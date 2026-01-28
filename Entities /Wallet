@@ -1,0 +1,27 @@
+{
+  "name": "Wallet",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Wallet name"
+    },
+    "encrypted_data": {
+      "type": "string",
+      "description": "AES-256 encrypted wallet data"
+    },
+    "public_address": {
+      "type": "string",
+      "description": "Primary public address"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "encrypted_data",
+    "public_address"
+  ]
+}
