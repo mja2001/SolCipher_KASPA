@@ -1,0 +1,108 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Zap, Box, GitBranch, Shield, Activity, 
+  Clock, Users, TrendingUp 
+} from 'lucide-react';
+
+export default function NetworkStats({ stats, isConnected }) {
+  const statItems = [
+    {
+      label: 'Block Rate',
+      value: stats?.blockRate || '1.0',
+      unit: 'blocks/sec',
+      icon: Zap,
+      color: 'text-cyan-400',
+      bgColor: 'bg-cyan-500/10'
+    },
+    {
+      label: 'DAG Tips',
+      value: stats?.dagTips || 12,
+      unit: 'tips',
+      icon: GitBranch,
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-500/10'
+    },
+    {
+      label: 'Blue Score',
+      value: stats?.blueScore?.toLocaleString() || '45,892,103',
+      unit: '',
+      icon: Box,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/10'
+    },
+    {
+      label: 'Privacy TXs',
+      value: stats?.privacyTxCount || 1247,
+      unit: 'today',
+      icon: Shield,
+      color: 'text-amber-400',
+      bgColor: 'bg-amber-500/10'
+    }
+  ];
+
+  return (
+    <Card className="bg-slate-900/50 border-slate-700/50 backdrop-blur">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-white text-base flex items-center gap-2">
+            <Activity className="w-4 h-4 text-cyan-400" />
+            Network Status
+          </CardTitle>
+          <Badge 
+            variant="outline" 
+            className={`${
+              isConnected 
+                ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' 
+                : 'border-red-500/30 text-red-400 bg-red-500/10'
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+            {isConnected ? 'Testnet Connected' : 'Disconnected'}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="grid grid-cols-2 gap-3">
+          {statItems.map((item) => (
+            <div 
+              key={item.label}
+              className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/30"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`p-1.5 rounded-lg ${item.bgColor}`}>
+                  <item.icon className={`w-3.5 h-3.5 ${item.color}`} />
+                </div>
+                <span className="text-slate-400 text-xs">{item.label}</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-white font-semibold text-lg">{item.value}</span>
+                {item.unit && (
+                  <span className="text-slate-500 text-xs">{item.unit}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Performance Indicator */}
+        <div className="mt-4 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-purple-500/10 rounded-xl p-3 border border-purple-500/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <span className="text-slate-300 text-sm">DAG Efficiency</span>
+            </div>
+            <span className="text-emerald-400 font-semibold">98.7%</span>
+          </div>
+          <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full transition-all duration-500"
+              style={{ width: '98.7%' }}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
