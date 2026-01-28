@@ -1,0 +1,200 @@
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { 
+  Settings as SettingsIcon, Shield, Download, Upload,
+  Trash2, AlertTriangle, Eye, EyeOff, Key, Globe
+} from 'lucide-react';
+import { toast } from 'sonner';
+
+export default function Settings({ isOpen, onClose, wallet, onExport, onDelete }) {
+  const [defaultPrivacy, setDefaultPrivacy] = useState('standard');
+  const [autoMix, setAutoMix] = useState(true);
+  const [showSeed, setShowSeed] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const handleExport = () => {
+    if (wallet) {
+      const data = JSON.stringify({
+        name: wallet.name,
+        address: wallet.public_address,
+        encrypted: wallet.encrypted_data
+      }, null, 2);
+      
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${wallet.name || 'wallet'}-backup.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      toast.success('Wallet exported successfully');
+    }
+  };
+
+  const handleDelete = () => {
+    if (confirmDelete) {
+      onDelete?.();
+      toast.success('Wallet deleted');
+      onClose();
+    } else {
+      setConfirmDelete(true);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-slate-900 border-slate-700 max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2">
+            <SettingsIcon className="w-5 h-5 text-slate-400" />
+            Settings
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          {/* Network Selection */}
+          <div className="space-y-3">
+            <h4 className="text-white font-medium flex items-center gap-2">
+              <Globe className="w-4 h-4 text-cyan-400" />
+              Network
+            </h4>
+            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-300">Testnet</p>
+                  <p className="text-slate-500 text-xs">testnet-1.kaspad.net:16210</p>
+                </div>
+                <Switch checked={true} className="data-[state=checked]:bg-cyan-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Privacy Settings */}
+          <div className="space-y-3">
+            <h4 className="text-white font-medium flex items-center gap-2">
+              <Shield className="w-4 h-4 text-purple-400" />
+              Privacy
+            </h4>
+            <div className="space-y-3">
+              <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-300 text-sm">Default Privacy Level</p>
+                    <p className="text-slate-500 text-xs">For new transactions</p>
+                  </div>
+                  <select
+                    value={defaultPrivacy}
+                    onChange={(e) => setDefaultPrivacy(e.target.value)}
+                    className="bg-slate-700 border-slate-600 text-white rounded-lg px-3 py-1.5 text-sm"
+                  >
+                    <option value="standard">Standard</option>
+                    <option value="enhanced">Enhanced</option>
+                    <option value="maximum">Maximum</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-300 text-sm">Auto-mix Incoming</p>
+                    <p className="text-slate-500 text-xs">Automatically mix received funds</p>
+                  </div>
+                  <Switch 
+                    checked={autoMix} 
+                    onCheckedChange={setAutoMix}
+                    className="data-[state=checked]:bg-purple-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Wallet Management */}
+          <div className="space-y-3">
+            <h4 className="text-white font-medium flex items-center gap-2">
+              <Key className="w-4 h-4 text-amber-400" />
+              Wallet
+            </h4>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800"
+                onClick={handleExport}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Encrypted Wallet
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full justify-start border-slate-700 text-slate-300 hover:bg-slate-800"
+                onClick={() => setShowSeed(!showSeed)}
+              >
+                {showSeed ? (
+                  <EyeOff className="w-4 h-4 mr-2" />
+                ) : (
+                  <Eye className="w-4 h-4 mr-2" />
+                )}
+                {showSeed ? 'Hide' : 'Show'} Recovery Phrase
+              </Button>
+
+              {showSeed && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+                  <div className="flex items-start gap-2 mb-3">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-amber-400 text-xs">
+                      Never share your recovery phrase. Anyone with this phrase can access your funds.
+                    </p>
+                  </div>
+                  <div className="bg-slate-900 rounded-lg p-3">
+                    <p className="text-slate-300 text-sm font-mono break-all">
+                      {wallet?.encrypted_data ? 
+                        'abandon ability able about above absent absorb abstract absurd abuse access accident' : 
+                        'No seed phrase available'
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Danger Zone */}
+          <div className="space-y-3 pt-4 border-t border-slate-700/50">
+            <h4 className="text-red-400 font-medium flex items-center gap-2">
+              <Trash2 className="w-4 h-4" />
+              Danger Zone
+            </h4>
+            <Button
+              variant="outline"
+              className={`w-full justify-start ${
+                confirmDelete 
+                  ? 'border-red-500 text-red-400 hover:bg-red-500/10' 
+                  : 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-red-400'
+              }`}
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {confirmDelete ? 'Click again to confirm deletion' : 'Delete Wallet'}
+            </Button>
+            {confirmDelete && (
+              <p className="text-red-400 text-xs">
+                This action cannot be undone. Make sure you have backed up your seed phrase.
+              </p>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
