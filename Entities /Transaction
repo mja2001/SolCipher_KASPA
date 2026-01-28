@@ -1,0 +1,73 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "tx_id": {
+      "type": "string",
+      "description": "Transaction hash"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "send",
+        "receive"
+      ],
+      "description": "Transaction type"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Transaction amount in KAS"
+    },
+    "recipient_address": {
+      "type": "string"
+    },
+    "sender_address": {
+      "type": "string"
+    },
+    "privacy_level": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "enhanced",
+        "maximum"
+      ],
+      "default": "standard"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "mixing",
+        "broadcasting",
+        "confirming",
+        "confirmed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "anonymity_set_size": {
+      "type": "number",
+      "description": "Number of participants in mixing"
+    },
+    "mixing_rounds": {
+      "type": "number",
+      "default": 1
+    },
+    "fee": {
+      "type": "number"
+    },
+    "confirmations": {
+      "type": "number",
+      "default": 0
+    },
+    "blue_score": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "tx_id",
+    "type",
+    "amount",
+    "status"
+  ]
+}
