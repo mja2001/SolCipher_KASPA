@@ -316,26 +316,6 @@ Tested on Kaspa testnet with average network conditions:
 
 ---
 
-## 🎨 User Interface
-
-### Dashboard
-![Dashboard Preview](docs/images/dashboard.png)
-*Clean, modern interface showing wallet balance, privacy status, and quick actions*
-
-### Send Private Transaction
-![Send Interface](docs/images/send.png)
-*Intuitive form with privacy level selection and real-time fee estimation*
-
-### Transaction Status
-![Transaction Status](docs/images/status.png)
-*Real-time monitoring with privacy metrics and DAG visualization*
-
-### Privacy Analytics
-![Analytics Dashboard](docs/images/analytics.png)
-*Comprehensive privacy statistics and historical trends*
-
----
-
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
