@@ -1,0 +1,226 @@
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { 
+  Send, Shield, Info, ChevronDown, ChevronUp,
+  Wallet, Clock, Zap
+} from 'lucide-react';
+import { toast } from 'sonner';
+import PrivacyLevelSelector from './PrivacyLevelSelector';
+import TransactionStatus from './TransactionStatus';
+
+export default function SendTransaction({ 
+  isOpen, 
+  onClose, 
+  wallet,
+  balance,
+  onSend 
+}) {
+  const [recipient, setRecipient] = useState('');
+  const [amount, setAmount] = useState('');
+  const [privacyLevel, setPrivacyLevel] = useState('standard');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [decoyCount, setDecoyCount] = useState(10);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
+  const [currentTx, setCurrentTx] = useState(null);
+
+  const estimatedFee = privacyLevel === 'standard' ? 0.001 : privacyLevel === 'enhanced' ? 0.002 : 0.003;
+  const estimatedTime = privacyLevel === 'standard' ? '~5 sec' : privacyLevel === 'enhanced' ? '~8 sec' : '~15 sec';
+
+  const handleSend = async () => {
+    if (!recipient || !amount) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
+    if (numAmount + estimatedFee > (balance?.total || 0)) {
+      toast.error('Insufficient balance');
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    // Generate mock transaction
+    const txId = `${Date.now().toString(16)}${Math.random().toString(16).slice(2, 18)}`;
+    const tx = {
+      tx_id: txId,
+      amount: numAmount,
+      recipient_address: recipient,
+      privacy_level: privacyLevel,
+      fee: estimatedFee,
+      anonymity_set_size: privacyLevel === 'standard' ? 75 : privacyLevel === 'enhanced' ? 127 : 215,
+      mixing_rounds: privacyLevel === 'standard' ? 1 : privacyLevel === 'enhanced' ? 2 : 3
+    };
+
+    setCurrentTx(tx);
+    setShowStatus(true);
+
+    // Simulate processing
+    setTimeout(() => {
+      setIsProcessing(false);
+      if (onSend) onSend(tx);
+    }, 10000);
+  };
+
+  const handleStatusClose = () => {
+    setShowStatus(false);
+    setCurrentTx(null);
+    setRecipient('');
+    setAmount('');
+    onClose();
+  };
+
+  const setMaxAmount = () => {
+    const maxAmount = Math.max(0, (balance?.total || 0) - estimatedFee);
+    setAmount(maxAmount.toFixed(8));
+  };
+
+  return (
+    <>
+      <Dialog open={isOpen && !showStatus} onOpenChange={onClose}>
+        <DialogContent className="bg-slate-900 border-slate-700 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <div className="p-2 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg">
+                <Shield className="w-4 h-4 text-white" />
+              </div>
+              Send Private Transaction
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-5 py-4">
+            {/* Recipient Address */}
+            <div className="space-y-2">
+              <Label className="text-slate-300">Recipient Address</Label>
+              <Input
+                placeholder="kaspa:qr..."
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 font-mono"
+              />
+            </div>
+
+            {/* Amount */}
+            <div className="space-y-2">
+              <Label className="text-slate-300">Amount (KAS)</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 pr-16"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 text-cyan-400 hover:text-cyan-300 h-7"
+                  onClick={setMaxAmount}
+                >
+                  MAX
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <Wallet className="w-3.5 h-3.5 text-slate-500" />
+                <span className="text-slate-400">
+                  Available: {(balance?.total || 0).toLocaleString()} KAS
+                </span>
+              </div>
+            </div>
+
+            {/* Privacy Level */}
+            <PrivacyLevelSelector 
+              selected={privacyLevel} 
+              onSelect={setPrivacyLevel} 
+            />
+
+            {/* Fee & Time Estimate */}
+            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/30">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <span className="text-slate-300 text-sm">Network Fee</span>
+                </div>
+                <span className="text-white font-medium">{estimatedFee} KAS</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-cyan-400" />
+                  <span className="text-slate-300 text-sm">Estimated Time</span>
+                </div>
+                <span className="text-cyan-400 font-medium">{estimatedTime}</span>
+              </div>
+            </div>
+
+            {/* Advanced Options */}
+            <div>
+              <button
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center gap-2 text-slate-400 hover:text-slate-300 text-sm transition-colors"
+              >
+                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                Advanced Options
+              </button>
+              
+              {showAdvanced && (
+                <div className="mt-3 space-y-4 p-4 bg-slate-800/30 rounded-xl border border-slate-700/30">
+                  <div className="space-y-2">
+                    <Label className="text-slate-400 text-xs">Custom Decoy Count</Label>
+                    <Input
+                      type="number"
+                      value={decoyCount}
+                      onChange={(e) => setDecoyCount(parseInt(e.target.value) || 10)}
+                      className="bg-slate-800 border-slate-700 text-white h-9"
+                    />
+                  </div>
+                  <div className="flex items-start gap-2 p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                    <Info className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-slate-400 text-xs">
+                      Higher decoy counts increase privacy but may slightly increase fees and confirmation time.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Send Button */}
+            <Button
+              onClick={handleSend}
+              disabled={isProcessing || !recipient || !amount}
+              className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-medium h-12"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Send Privately
+            </Button>
+
+            {/* Privacy Guarantee */}
+            <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+              <Shield className="w-3.5 h-3.5" />
+              <span>Transaction details are cryptographically protected</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <TransactionStatus
+        isOpen={showStatus}
+        onClose={handleStatusClose}
+        transaction={currentTx}
+      />
+    </>
+  );
+}
